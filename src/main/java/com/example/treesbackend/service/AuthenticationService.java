@@ -1,6 +1,7 @@
 package com.example.treesbackend.service;
 
 import com.example.treesbackend.dto.LoginResponseDto;
+import com.example.treesbackend.dto.RegistrationDto;
 import com.example.treesbackend.model.Role;
 import com.example.treesbackend.model.User;
 import com.example.treesbackend.repository.RoleRepository;
@@ -32,32 +33,33 @@ public class AuthenticationService {
     @Autowired
     private TokenService tokenService;
 
-    public User registerUser(String username, String password){
+    public RegistrationDto registerUser(String username, String password){
         String encodedPassword = passwordEncoder.encode(password);
         Role userRole = null;
-        if(roleRepository.findByAuthority("USER").isPresent()){
-            userRole = roleRepository.findByAuthority("USER").get();
-        }
+
+        userRole = roleRepository.findByAuthority("USER").get();
+
 
         Set<Role> authorities = new HashSet<>();
 
         authorities.add(userRole);
-        return userRepository.save(new User(0,username,encodedPassword,authorities));
+        userRepository.save(new User(0,username,encodedPassword,authorities));
+        return new RegistrationDto(username,encodedPassword);
     }
 
-public LoginResponseDto loginUser(String username, String password){
+    public LoginResponseDto loginUser(String username, String password){
 
-    try{
-        Authentication auth = authenticationManager.authenticate(
+        try{
+            Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password)
-        );
+            );
 
-        String token = tokenService.generateJwt(auth);
+            String token = tokenService.generateJwt(auth);
 
-        return new LoginResponseDto(userRepository.findByUsername(username).get(), token);
+            return new LoginResponseDto(userRepository.findByUsername(username).get(), token);
 
-    } catch(AuthenticationException e){
-        return new LoginResponseDto(null, "");
+        } catch(AuthenticationException e){
+            return new LoginResponseDto(null, "");
+        }
     }
-}
 }
