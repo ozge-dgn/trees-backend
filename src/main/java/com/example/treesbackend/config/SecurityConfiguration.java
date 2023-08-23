@@ -53,9 +53,11 @@ public class SecurityConfiguration {
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/auth/**").permitAll();
+                    auth.requestMatchers("/admin/**").hasRole("ADMIN");
+                    auth.requestMatchers("/user/**").hasAnyRole("ADMIN","USER");
                     auth.anyRequest().authenticated();
                 })
-                .oauth2ResourceServer(oauth2-> oauth2.jwt(jwt->jwt.decoder(jwtDecoder())))//problem
+                .oauth2ResourceServer(oauth2-> oauth2.jwt(jwt->jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))//problem
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build()
                 ;
@@ -70,5 +72,13 @@ public class SecurityConfiguration {
         JWK jwk = new RSAKey.Builder(keys.getPublicKey()).privateKey(keys.getPrivateKey()).build();
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwks);
+    }
+    @Bean JwtAuthenticationConverter jwtAuthenticationConverter(){
+        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
     }
 }

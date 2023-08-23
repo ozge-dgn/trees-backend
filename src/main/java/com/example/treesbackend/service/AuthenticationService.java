@@ -44,21 +44,7 @@ public class AuthenticationService {
         authorities.add(userRole);
         return userRepository.save(new User(0,username,encodedPassword,authorities));
     }
-/*
-    public LoginResponseDto loginUser(String username, String password){
-        try {
-            Authentication auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
-            ) ;
-            String token = tokenService.generateJwt(auth);
-            return new LoginResponseDto(userRepository.findByUsername(username).get(),token);
 
-        }catch (AuthenticationException e){
-            return new LoginResponseDto(null,"");
-        }
-
-    }
- */
 public LoginResponseDto loginUser(String username, String password){
 
     try{
