@@ -12,8 +12,9 @@ import java.util.Set;
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.IDENTITY)
+    @GeneratedValue( strategy = GenerationType.AUTO)
     private Integer id;
+    @Column(unique = true)
     private String username;
     private String password;
     @ManyToMany( fetch = FetchType.EAGER )

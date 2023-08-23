@@ -24,12 +24,15 @@ public class AuthenticationService {
 
     public User registerUser(String username, String password){
         String encodedPassword = passwordEncoder.encode(password);
-        Role userRole = roleRepository.findByAuthority("USER").get();
+        Role userRole = null;
+        if(roleRepository.findByAuthority("USER").isPresent()){
+            userRole = roleRepository.findByAuthority("USER").get();
+        }
 
         Set<Role> authorities = new HashSet<>();
 
         authorities.add(userRole);
-        return userRepository.save(new User(username,encodedPassword,authorities));
+        return userRepository.save(new User(0,username,encodedPassword,authorities));
     }
 
 }
