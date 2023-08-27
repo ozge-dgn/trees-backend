@@ -1,9 +1,12 @@
 package com.example.treesbackend.config;
 
+import com.example.treesbackend.service.UserService;
 import com.example.treesbackend.utils.RSAKeyProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -31,6 +34,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 public class SecurityConfiguration {
 
     private final RSAKeyProperties keys;
+    private UserService userService;
 
     public SecurityConfiguration(RSAKeyProperties keys){
         this.keys = keys;
@@ -54,14 +58,23 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/auth/**").permitAll();
                     auth.requestMatchers("/admin/**").hasRole("ADMIN");
-                    auth.requestMatchers("/user/**").hasAnyRole("ADMIN","USER");
+                    auth.requestMatchers("/user/**").hasAnyRole("USER","ADMIN");
                     auth.anyRequest().authenticated();
                 })
-                .oauth2ResourceServer(oauth2-> oauth2.jwt(jwt->jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))//problem
+                .oauth2ResourceServer(oauth2->
+                        oauth2
+                                .jwt( jwt->
+                                        jwt.
+                                            jwtAuthenticationConverter(jwtAuthenticationConverter()
+                                )
+                        )
+                )
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                //.authenticationProvider()
                 .build()
                 ;
     }
+
     @Bean
     public JwtDecoder jwtDecoder(){
         return NimbusJwtDecoder.withPublicKey(keys.getPublicKey()).build();
@@ -81,4 +94,6 @@ public class SecurityConfiguration {
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
         return jwtAuthenticationConverter;
     }
+
+
 }

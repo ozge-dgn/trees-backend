@@ -35,9 +35,8 @@ public class AuthenticationService {
 
     public RegistrationDto registerUser(String username, String password){
         String encodedPassword = passwordEncoder.encode(password);
-        Role userRole = null;
 
-        userRole = roleRepository.findByAuthority("USER").get();
+        Role userRole = roleRepository.findByAuthority("USER").get();
 
 
         Set<Role> authorities = new HashSet<>();
